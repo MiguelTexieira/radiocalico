@@ -168,8 +168,11 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (currentStreamInfo.name) {
       // Fallback to stream name if specific quality not determined
       audioQuality.textContent = `Stream quality: ${currentStreamInfo.name}`;
+    } else if (currentStreamInfo.url) {
+      // Show connecting state when stream is being attempted
+      audioQuality.textContent = `Stream quality: Connecting...`;
     } else {
-      // Default fallback
+      // Default fallback when no stream is active
       audioQuality.textContent = `Stream quality: HLS Adaptive`;
     }
   }
@@ -758,11 +761,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError(
                   `Network error with ${streamName} - trying fallback...`
                 );
+                // Reset stream info for fallback attempt
+                currentStreamInfo = { url: null, name: null, quality: null };
+                updateStreamQuality();
                 setTimeout(() => {
                   initializeHLS(null, attemptNumber + 1);
                 }, 2000);
               } else {
                 showError("All streams failed - check your connection");
+                // Reset stream info on complete failure
+                currentStreamInfo = { url: null, name: null, quality: null };
+                updateStreamQuality();
               }
               break;
             case Hls.ErrorTypes.MEDIA_ERROR:
@@ -774,6 +783,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 hls.recoverMediaError();
               } catch (e) {
                 if (attemptNumber < streamOptions.length - 1) {
+                  // Reset stream info for fallback attempt
+                  currentStreamInfo = { url: null, name: null, quality: null };
+                  updateStreamQuality();
                   setTimeout(() => {
                     initializeHLS(null, attemptNumber + 1);
                   }, 2000);
@@ -781,6 +793,9 @@ document.addEventListener('DOMContentLoaded', function() {
                   showError(
                     "Media recovery failed - try refreshing the page"
                   );
+                  // Reset stream info on complete failure
+                  currentStreamInfo = { url: null, name: null, quality: null };
+                  updateStreamQuality();
                 }
               }
               break;
@@ -788,11 +803,17 @@ document.addEventListener('DOMContentLoaded', function() {
               log("Fatal error - trying fallback stream...");
               if (attemptNumber < streamOptions.length - 1) {
                 showError(`${streamName} failed - trying fallback...`);
+                // Reset stream info for fallback attempt
+                currentStreamInfo = { url: null, name: null, quality: null };
+                updateStreamQuality();
                 setTimeout(() => {
                   initializeHLS(null, attemptNumber + 1);
                 }, 2000);
               } else {
                 showError("All streams failed - please reload the page");
+                // Reset stream info on complete failure
+                currentStreamInfo = { url: null, name: null, quality: null };
+                updateStreamQuality();
                 if (hls) {
                   hls.destroy();
                   hls = null;
@@ -994,10 +1015,8 @@ document.addEventListener('DOMContentLoaded', function() {
   updateRatingDisplay(null, null);
   addLog("Rating display initialized");
 
-  // Initialize stream quality display
-  addLog("Initializing stream quality display...");
-  updateStreamQuality();
-  addLog("Stream quality display initialized");
+  // Stream quality display will be initialized after HLS setup
+  addLog("Stream quality display will be set after HLS initialization...");
 
   // Test metadata fetch immediately
   addLog("Testing metadata fetch...");
