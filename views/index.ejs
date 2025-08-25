@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - Local Development</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to <%= title %></h1>
+        <p>Your Express.js development environment is ready!</p>
+        
+        <div class="status-panel">
+            <h2>System Status</h2>
+            <div id="status">Checking...</div>
+            <div id="db-info"></div>
+        </div>
+
+        <div class="info-panel">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="/api/health">Health Check API</a></li>
+                <li><a href="/api/test">Database Test API</a></li>
+                <li><a href="/api/data">Sample Data API</a></li>
+            </ul>
+        </div>
+
+        <div class="tech-stack">
+            <h3>Technology Stack</h3>
+            <ul>
+                <li>Web Server: Express.js (Node.js)</li>
+                <li>Database: PostgreSQL 16</li>
+                <li>Template Engine: EJS</li>
+                <li>Port: <%= process.env.PORT || 5000 %></li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

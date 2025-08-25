@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Radio Calico - 24-bit Lossless Streaming</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/radio-player.css" />
+  </head>
+  <body>
+    <div class="player-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <img src="/logo.png" alt="Radio Calico Logo" class="logo" />
+          <h1>Radio Calico</h1>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- Album Section -->
+        <div class="album-section">
+          <div class="album-art-container">
+            <img
+              id="albumArt"
+              src="https://d3d4yli4hf5bmh.cloudfront.net/cover.jpg"
+              alt="Album Art"
+              class="album-art"
+            />
+            <div class="album-art-placeholder" id="albumArtPlaceholder">
+              <svg viewBox="0 0 24 24" class="music-icon">
+                <path
+                  d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Song Info Section -->
+        <div class="song-info">
+          <div class="track-info">
+            <div class="track-artist" id="trackArtist">Loading...</div>
+            <div class="track-title" id="trackTitle">
+              Fetching current track...
+            </div>
+            <div class="track-album" id="trackAlbum"></div>
+            <div class="quality-info" id="trackExtra">
+              Loading track details...
+            </div>
+            <div class="quality-info secondary" id="sourceQuality"></div>
+            <div class="quality-info secondary" id="audioQuality">
+              Stream quality: 48kHz FLAC / HLS Lossless
+            </div>
+          </div>
+
+          <!-- Rating Section -->
+          <div class="rating-section">
+            <div class="rating-label">Rate this track: 👍 👎</div>
+            <div class="rating-buttons" id="songRating">
+              <button
+                class="rating-btn thumbs-up"
+                id="thumbsUpBtn"
+                title="Like this song"
+              >
+                👍 <span class="vote-count" id="thumbsUpCount">0</span>
+              </button>
+              <button
+                class="rating-btn thumbs-down"
+                id="thumbsDownBtn"
+                title="Dislike this song"
+              >
+                👎 <span class="vote-count" id="thumbsDownCount">0</span>
+              </button>
+            </div>
+            <div class="rating-info" id="ratingInfo">
+              <span class="rating-text">Rate this song</span>
+            </div>
+          </div>
+
+          <!-- Audio Controls -->
+          <div class="audio-controls">
+            <button class="play-btn" id="playButton">
+              <svg viewBox="0 0 24 24" id="playIcon">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+            <div class="time-info" id="elapsedTime">0:35 / Live</div>
+            <div class="volume-container">
+              <svg class="volume-icon" viewBox="0 0 24 24">
+                <path
+                  d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
+                />
+              </svg>
+              <input
+                type="range"
+                class="volume-slider"
+                id="volumeControl"
+                min="0"
+                max="100"
+                value="70"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Previous Tracks -->
+      <div class="previous-tracks" id="previousTracks">
+        <div class="previous-tracks-content">
+          <div class="previous-tracks-header">Previous tracks:</div>
+          <div class="tracks-list" id="tracksList">
+            <div class="track-item">
+              <span class="track-number">TLC:</span>
+              <div class="track-details">
+                <div class="track-artist-title">
+                  <div class="artist">Ain't 2 Proud 2 Beg</div>
+                </div>
+              </div>
+            </div>
+            <div class="track-item">
+              <span class="track-number">The Raconteurs:</span>
+              <div class="track-details">
+                <div class="track-artist-title">
+                  <div class="artist">Steady, As She Goes</div>
+                </div>
+              </div>
+            </div>
+            <div class="track-item">
+              <span class="track-number">Mick Jagger:</span>
+              <div class="track-details">
+                <div class="track-artist-title">
+                  <div class="artist">Just Another Night</div>
+                </div>
+              </div>
+            </div>
+            <div class="track-item">
+              <span class="track-number">Beyoncé:</span>
+              <div class="track-details">
+                <div class="track-artist-title">
+                  <div class="artist">Irreplaceable</div>
+                  <div class="title">(Album Version)</div>
+                </div>
+              </div>
+            </div>
+            <div class="track-item">
+              <span class="track-number">Etta James:</span>
+              <div class="track-details">
+                <div class="track-artist-title">
+                  <div class="artist">I'd Rather Go Blind</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Native audio element (hidden, controlled via custom UI) -->
+      <audio id="audioPlayer" class="audio-element"></audio>
+
+      <div class="debug-controls" style="display: none">
+        <div class="status-display" id="statusDisplay">
+          Click play to start streaming
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="format-info">HLS • HTTP Live Streaming</div>
+
+        <div class="debug-info">
+          <pre id="debugLog">
+Debug Log:
+- Page loaded
+- Waiting for user interaction...</pre
+          >
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <script src="/js/radio-player.js"></script>
+  </body>
+</html>
