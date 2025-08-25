@@ -117,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentTrackInfo = {};
   let songRatings = {}; // In-memory storage for ratings
   let userVotes = {}; // Track user votes to prevent duplicates
+  let currentStreamInfo = { url: null, name: null, quality: null }; // Track current stream
 
   addLog("Generating user ID...");
   let userId = generateUserId(); // Generate unique user ID for session
@@ -156,6 +157,21 @@ document.addEventListener('DOMContentLoaded', function() {
   // Create song ID from artist and title
   function createSongId(artist, title) {
     return btoa(`${artist}|${title}`).replace(/[^a-zA-Z0-9]/g, "");
+  }
+
+  // Update stream quality display
+  function updateStreamQuality() {
+    if (!audioQuality) return;
+    
+    if (currentStreamInfo.quality) {
+      audioQuality.textContent = `Stream quality: ${currentStreamInfo.quality}`;
+    } else if (currentStreamInfo.name) {
+      // Fallback to stream name if specific quality not determined
+      audioQuality.textContent = `Stream quality: ${currentStreamInfo.name}`;
+    } else {
+      // Default fallback
+      audioQuality.textContent = `Stream quality: HLS Adaptive`;
+    }
   }
 
   // Database API functions
@@ -498,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.bit_depth && data.sample_rate && sourceQuality && audioQuality) {
           const sampleRateKhz = data.sample_rate / 1000;
           sourceQuality.textContent = `Source quality: ${data.bit_depth}-bit ${sampleRateKhz}kHz`;
-          audioQuality.textContent = `Stream quality: 48kHz FLAC / HLS Lossless`;
+          updateStreamQuality();
         }
 
         // Add animation for track change
@@ -626,16 +642,24 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize HLS with fallback streams
   function initializeHLS(streamUrl = null, attemptNumber = 0) {
     const streamOptions = [
-      { url: STREAM_URLS.aac_hifi, name: "AAC Hi-Fi" }, // Try AAC first (more compatible)
-      { url: STREAM_URLS.master, name: "Master Playlist" },
-      { url: STREAM_URLS.flac_hires, name: "FLAC Lossless" }, // FLAC last (least compatible)
+      { url: STREAM_URLS.aac_hifi, name: "AAC Hi-Fi", quality: "48kHz AAC / HLS Adaptive" }, // Try AAC first (more compatible)
+      { url: STREAM_URLS.master, name: "Master Playlist", quality: "HLS Adaptive (Multiple Qualities)" },
+      { url: STREAM_URLS.flac_hires, name: "FLAC Lossless", quality: "48kHz FLAC / HLS Lossless" }, // FLAC last (least compatible)
     ];
 
     const currentStream =
       streamUrl ||
       streamOptions[attemptNumber]?.url ||
       STREAM_URLS.aac_hifi;
-    const streamName = streamOptions[attemptNumber]?.name || "Stream";
+    const streamOption = streamOptions[attemptNumber] || { name: "Stream", quality: "HLS Adaptive" };
+    const streamName = streamOption.name;
+
+    // Store current stream info
+    currentStreamInfo = {
+      url: currentStream,
+      name: streamName,
+      quality: streamOption.quality
+    };
 
     log(`Initializing HLS.js with ${streamName}...`);
 
@@ -699,6 +723,9 @@ document.addEventListener('DOMContentLoaded', function() {
         log(`Manifest parsed: ${data.levels.length} quality levels found`);
         updateStatus(`Stream ready (${streamName})`, "connected");
         hideError();
+        
+        // Update stream quality display
+        updateStreamQuality();
       });
 
       hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
@@ -789,6 +816,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `Stream ready (Native HLS - ${streamName})`,
         "connected"
       );
+      
+      // Update stream quality display for Safari
+      updateStreamQuality();
     } else {
       showError("HLS is not supported in your browser");
     }
@@ -963,6 +993,11 @@ document.addEventListener('DOMContentLoaded', function() {
   addLog("Initializing rating display...");
   updateRatingDisplay(null, null);
   addLog("Rating display initialized");
+
+  // Initialize stream quality display
+  addLog("Initializing stream quality display...");
+  updateStreamQuality();
+  addLog("Stream quality display initialized");
 
   // Test metadata fetch immediately
   addLog("Testing metadata fetch...");
